@@ -4,7 +4,7 @@
 export const part1 = async d => {
 	const list1 = [];
 	const list2 = [];
-	const data = d.split('\n').map(e => e.split(/\W+/).map((e,i) => {
+	d.split('\n').map(e => e.split(/\W+/).map((e,i) => {
 		if (i == 0) {
 			list1.push(+e);
 		} else {
@@ -21,7 +21,18 @@ export const part1 = async d => {
  * @param {string} d 
  */
 export const part2 = async d => {
-	const data = d.split('\n');
-	data.splice(0, data.length);
-	return data;
+	const list1 = [];
+	const list2 = new Map();
+	d.split('\n').map(e => e.split(/\W+/).map((e,i) => {
+		if (i == 0) {
+			list1.push(e);
+		} else {
+			if (list2.has(e)) {
+				list2.set(e, list2.get(e) + 1);
+			} else {
+				list2.set(e, 1);
+			}
+		}
+	}));
+	return list1.reduce((p, c) => p + (c * (list2.get(c) || 0)), 0);
 };
