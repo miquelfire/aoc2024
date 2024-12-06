@@ -94,7 +94,6 @@ export const part2 = async d => {
 	const guardInfo = [0,0,0];
 	let startPos = [0,0];
 	let loopsFound = 0;
-	const newObjs = new Set();
 
 	for (let y = 0; y < data.length; y++) {
 		for (let x = 0; x < data[y].length; x++) {
