@@ -4,7 +4,6 @@
 export const part1 = async d => {
 	const driveMap = d.split('').map(e => +e);
 	const sectorCount = driveMap.reduce((p, v) => p + v, 0);
-	const fileCount = Math.ceil(driveMap.length / 2);
 	const driveSectors = [];
 
 	let i = 0;
