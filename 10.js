@@ -50,7 +50,47 @@ export const part1 = async d => {
  * @param {string} d 
  */
 export const part2 = async d => {
-	const data = d.split('\n');
-	data.splice(0, data.length);
-	return data;
+	const data = d.split('\n').map(e => e.split('').map(e => +e));
+	/** @type {[number, number][]} */
+	const startPoints = [];
+	const trailScores = [0];
+
+	/**
+	 * 
+	 * @param {number[][]} map 
+	 * @param {[number, number]} start 
+	 * @param {Set<string>} ends
+	 */
+	function followPath(map, start) {
+		const nextHeight = map[start[0]][start[1]] + 1;
+		let sum = 0;
+
+		if (nextHeight == 10) return 1;
+		if (start[0] + 1 < map.length && map[start[0] + 1][start[1]] == nextHeight) {
+			sum += followPath(map, [start[0] + 1, start[1]]);
+		}
+		if (start[1] + 1 < map[start[0]].length && map[start[0]][start[1] + 1] == nextHeight) {
+			sum += followPath(map, [start[0], start[1] + 1]);
+		}
+		if (start[0] - 1 > -1 && map[start[0] - 1][start[1]] == nextHeight) {
+			sum += followPath(map, [start[0] - 1, start[1]]);
+		}
+		if (start[1] - 1 > -1 && map[start[0]][start[1] - 1] == nextHeight) {
+			sum += followPath(map, [start[0], start[1] - 1]);
+		}
+		return sum;
+	}
+
+	for (let y = 0; y < data.length; y++) {
+		for (let x = 0; x < data[y].length; x++) {
+			if (data[y][x] == 0) {
+				startPoints.push([y, x]);
+			}
+		}
+	}
+
+	startPoints.forEach(e => {
+		trailScores.push(followPath(data, e, 0));
+	});
+	return trailScores.reduce((p, v) => p + v, 0);
 };
