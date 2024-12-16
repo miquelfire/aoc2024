@@ -190,39 +190,6 @@ export const part1 = async d => {
  * @param {string} d 
  */
 export const part2 = async d => {
-	/**
-	 * @param {[number, number]} size
-	 * @param {Set<string>} boxes 
-	 * @param {Set<string>} walls 
-	 * @param {[number, number]} robotPos 
-	 */
-	function drawMap(size, boxes, walls, robotPos) {
-		const map = [];
-		for (let y = 0; y < size[1]; y++) {
-			const line = [];
-			map.push(line);
-			for (let x = 0; x < size[0]; x++) {
-				line.push('.');
-			}
-		}
-
-		for (let x = 0; x < size[0]; x++) {
-			for (let y = 0; y < size[1]; y++) {
-				if (robotPos[0] == x && robotPos[1] == y) {
-					map[y][x] = '@';
-				}
-				const pos = [x, y].join('x');
-				if (boxes.has(pos)) {
-					map[y][x] = '[';
-					map[y][x + 1] = ']';
-				}
-				if (walls.has(pos)) {
-					map[y][x] = '#';
-				}
-			}
-		}
-		console.log(map.map(e => e.join('')).join('\n') + '\n');
-	}
 	const data = d.split('\n\n');
 	const map = data[0].split('\n').map(e => e.split(''));
 	const moves = data[1].split('\n').join('').split('');
@@ -232,7 +199,6 @@ export const part2 = async d => {
 	/** @type {Set<string>} */
 	const boxes = new Set();
 	const robotPos = [0, 0];
-	const mapSize = [map[0].length * 2, map.length];
 
 	for (let y = 0; y < map.length; y++) {
 		for (let x = 0; x < map[y].length; x++) {
@@ -315,7 +281,7 @@ export const part2 = async d => {
 					});
 					boxesBeingPushed.forEach(e => {
 						const oldPos = e.split('x');
-						const newPos = [oldPos[0], +oldPos[1] + 1].join('x');
+						const newPos = [oldPos[0], +oldPos[1] - 1].join('x');
 						boxes.add(newPos);
 					});
 				}
@@ -330,7 +296,7 @@ export const part2 = async d => {
 				if (walls.has(pos.join('x'))) {
 					break; // Ran into a wall at first. Nothing to do
 				}
-				
+
 				while (spacesToCheck.size) {
 					const [posStr] = spacesToCheck;
 					spacesToCheck.delete(posStr);
@@ -421,7 +387,6 @@ export const part2 = async d => {
 				}
 				while (moving) {
 					const posStr = pos.join('x');
-					const pos2Str = [pos[0] + 1, pos[1]].join('x');
 					if (walls.has(posStr)) {
 						// Hit a wall 
 						moving = false;
@@ -449,9 +414,7 @@ export const part2 = async d => {
 				break;
 			}
 		}
-		drawMap(mapSize, boxes, walls, robotPos); debugger;
 	});
-	drawMap(mapSize, boxes, walls, robotPos); debugger;
 
 	const boxGPS = [...boxes].map(e => e.split('x').map(e => +e).reduce((x, y) => y * 100 + x)).reduce((p, v) => p + v);
 
