@@ -1,8 +1,8 @@
 /**
- * @param {string} startXY 
- * @param {string} endXY 
+ * @param {string} startNode 
+ * @param {string} endNode 
  * @param {Map<string, string[]>} graph 
- * @returns {false|number[]}
+ * @returns {false|string[]}
  */
 export function bfs(startNode, endNode, graph) {
 	const queue = [startNode];
@@ -38,7 +38,7 @@ export function bfs(startNode, endNode, graph) {
  * @param {string} startNode
  * @param {string} endNode 
  * @param {Map<string, {node: string, cost: number}[]} graph 
- * @returns {false|number[]}
+ * @returns {false|string[]}
  */
 export function ucs(startNode, endNode, graph) {
 	const queue = [[startNode, 0]]; // Needs to be PriorityQueue
