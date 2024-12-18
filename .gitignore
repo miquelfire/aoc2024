@@ -1,3 +1,6 @@
+#ignore files that exists for copying stuff
+*.temp.*
+
 # Logs
 logs
 *.log
