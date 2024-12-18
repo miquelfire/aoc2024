@@ -1,76 +1,37 @@
+import { ucs } from './utils.js';
+
+/**
+ * 
+ * @param {string[][]} mapRaw 
+ * @param {string[]} pathRaw
+ */
+// eslint-disable-next-line no-unused-vars
+function drawMap(mapRaw, pathRaw) {
+	// Clone map
+	const map = mapRaw.map(e => e.join('')).join('\n').split('\n').map(e => e.split(''));
+	const path = pathRaw.map(e => e.split('x').map(e => +e));
+
+	path.forEach(([x, y]) => map[y][x] = 'O');
+
+	console.log(map.map(e => e.join('')).join('\n'));
+}
 /**
  * @param {string} d 
  */
 export const part1 = async d => {
 	// TODO: Redo to allow having a straight paths work out
 	const mapRaw = d.split('\n').map(e => e.split(''));
-	/** @type {Map<string, string[]} */
+	/** @type {Map<string, { node: string, cost: number }[]} */
 	const map = new Map();
-	const start = [0, 0];
+	const start = [0, 0, 1];
 	const end = [0, 0];
 
-	/**
-	 * try all paths, adding up costs as it moves and turns
-	 * @param {string} current 
-	 * @param {number} dir 1-4 -> NESW
-	 * @param {string} end 
-	 * @param {Map<string, string[]>} map 
-	 * @returns {number}
-	 */
-	function pathFind(current, dir, end, map, cost = 0) {
-		// Calculate cost of directions
-		const [x, y] = current.split('x').map(e => +e);
-		/** @type {Map<string, {cost: number, dir: number}>} */
-		const pathCosts = new Map();
-		const possiblePaths = map.get(current);
-		let cheapestPath = Infinity;
-
-		// TODO: going down straight paths and only recruse if there's choice
-		switch (dir) {
-			case 1: {
-				pathCosts.set([x, y - 1].join('x'), { cost: 1, dir: 1 });
-				pathCosts.set([x - 1, y].join('x'), { cost: 1000, dir: 4 });
-				pathCosts.set([x + 1, y].join('x'), { cost: 1000, dir: 2 });
-				break;
-			}
-			case 2: {
-				pathCosts.set([x + 1, y].join('x'), { cost: 1, dir: 2 });
-				pathCosts.set([x, y - 1].join('x'), { cost: 1000, dir: 1 });
-				pathCosts.set([x, y + 1].join('x'), { cost: 1000, dir: 3 });
-				break;
-			}
-			case 3: {
-				pathCosts.set([x, y + 1].join('x'), { cost: 1, dir: 3 });
-				pathCosts.set([x - 1, y].join('x'), { cost: 1000, dir: 4 });
-				pathCosts.set([x + 1, y].join('x'), { cost: 1000, dir: 2 });
-				break;
-			}
-			case 4: {
-				pathCosts.set([x - 1, y].join('x'), { cost: 1, dir: 4 });
-				pathCosts.set([x, y - 1].join('x'), { cost: 1000, dir: 1 });
-				pathCosts.set([x, y + 1].join('x'), { cost: 1000, dir: 3 });
-				break;
-			}
-		}
-
-		pathCosts.forEach((costInfo, path) => {
-			if (possiblePaths.includes(path)) {
-				if (costInfo.cost == 1) {
-					//
-				} else {
-					const new_cost = pathFind(path, costInfo.dir, end, map, cost + costInfo.cost);
-
-				}
-				if (new_cost < cheapestPath) {
-					cheapestPath = new_cost;
-				}
-			}
-		});
-		return cheapestPath;
-	}
 	for (let y = 0; y < mapRaw.length; y++) {
 		for (let x = 0; x < mapRaw[y].length; x++) {
-			const nodes = [];
+			/**
+			 * @type {{node: string, cost: number}[][]}
+			 */
+			const nodes = [[], [], [], []]; // One for each direction we are facing
 			if (mapRaw[y][x] == '#') {
 				continue;
 			}
@@ -82,23 +43,87 @@ export const part1 = async d => {
 				end[0] = x;
 				end[1] = y;
 			}
+
+			// Going to the West
 			if (mapRaw[y][x - 1] != '#') {
-				nodes.push([x - 1, y].join('x'));
+				nodes[3].push({ node: [x - 1, y, 3].join('x'), cost: 1 });
+				nodes[0].push({ node: [x - 1, y, 0].join('x'), cost: 1001 });
+				nodes[2].push({ node: [x - 1, y, 2].join('x'), cost: 1001 });
 			}
+			// Going to the East
 			if (mapRaw[y][x + 1] != '#') {
-				nodes.push([x + 1, y].join('x'));
+				nodes[1].push({ node: [x + 1, y, 1].join('x'), cost: 1 });
+				nodes[0].push({ node: [x + 1, y, 0].join('x'), cost: 1001 });
+				nodes[2].push({ node: [x + 1, y, 2].join('x'), cost: 1001 });
 			}
+			// Going to the North
 			if (mapRaw[y - 1][x] != '#') {
-				nodes.push([x, y - 1].join('x'));
+				nodes[0].push({ node: [x, y - 1, 0].join('x'), cost: 1 });
+				nodes[1].push({ node: [x, y - 1, 1].join('x'), cost: 1001 });
+				nodes[3].push({ node: [x, y - 1, 3].join('x'), cost: 1001 });
 			}
+			// Going to the South
 			if (mapRaw[y + 1][x] != '#') {
-				nodes.push([x, y + 1].join('x'));
+				nodes[2].push({ node: [x, y + 1, 2].join('x'), cost: 1 });
+				nodes[1].push({ node: [x, y + 1, 1].join('x'), cost: 1001 });
+				nodes[3].push({ node: [x, y + 1, 3].join('x'), cost: 1001 });
 			}
-			map.set([x, y].join('x'), nodes);
+			map.set([x, y, 0].join('x'), nodes[0]);
+			map.set([x, y, 1].join('x'), nodes[1]);
+			map.set([x, y, 2].join('x'), nodes[2]);
+			map.set([x, y, 3].join('x'), nodes[3]);
 		}
 	}
+	map.set([...end, 0].join('x'), [{ node: end.join('x'), cost: 0 }]);
+	map.set([...end, 1].join('x'), [{ node: end.join('x'), cost: 0 }]);
+	map.set([...end, 2].join('x'), [{ node: end.join('x'), cost: 0 }]);
+	map.set([...end, 3].join('x'), [{ node: end.join('x'), cost: 0 }]);
+	map.set(end.join('x'), [
+		{ node: [...end, 0].join('x'), cost: 0 },
+		{ node: [...end, 1].join('x'), cost: 0 },
+		{ node: [...end, 2].join('x'), cost: 0 },
+		{ node: [...end, 3].join('x'), cost: 0 },
+	]);
 
-	return pathFind(start.join('x'), 2, end.join('x'), map);
+	const path = ucs(start.join('x'), end.join('x'), map);
+	if (!path) {
+		return null;
+	}
+
+	drawMap(mapRaw, path);
+
+	// Remove the direction from the path returned values
+	path.reverse().splice(path.length - 1, 1);
+	path.forEach((e, i) => {
+		const [x, y] = e.split('x');
+		path[i] = [+x, +y];
+	});
+
+	/**
+	 * 
+	 * @param {[number, number][]} path 
+	 * @param {*} map 
+	 * @param {[number, number]} cur 
+	 * @returns 
+	 */
+	function getCostOfPath(path, cur) {
+		let sum = path.length;
+		let turns = 0;
+		if (path[0][1] != cur[1]) {
+			turns++;
+		}
+		path.unshift(cur.slice(0, 1));
+
+		// Check for turns
+		for (let i = 1; i < path.length - 1; i++) {
+			if (path[i - 1][0] != path[i + 1][0] && path[i - 1][1] != path[i + 1][1]) {
+				turns++;
+			}
+		}
+		return sum + turns * 1000;
+	}
+
+	return getCostOfPath(path, start);
 };
 
 /**
