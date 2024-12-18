@@ -1,36 +1,36 @@
 /** @template T */
-export class PriorityQueue{
-	constructor(){
+export class PriorityQueue {
+	constructor() {
 		this.values = [];
 	}
-    
+
 	/**
 	 * 
 	 * @param {T} node 
 	 * @param {number} priority 
 	 */
-	put(node, priority){
+	put(node, priority) {
 		var flag = false;
-		for(let i=0; i<this.values.length; i++){
-			if(this.values[i].priority>priority){
-				this.values.splice(i, 0, {node, priority});
+		for (let i = 0; i < this.values.length; i++) {
+			if (this.values[i].priority > priority) {
+				this.values.splice(i, 0, { node, priority });
 				flag = true;
 				break;
 			}
 		}
-		if(!flag){
-			this.values.push({node, priority});
+		if (!flag) {
+			this.values.push({ node, priority });
 		}
 	}
-    
+
 	/**
 	 * @returns {{node: T, priority: number}}
 	 */
-	get(){
+	get() {
 		return this.values.shift();
 	}
-    
-	size(){
+
+	get size() {
 		return this.values.length;
 	}
 }
@@ -78,40 +78,19 @@ export function bfs(startNode, endNode, graph) {
  * @returns {false|string[]}
  */
 export function ucs(startNode, endNode, graph) {
-	/*
-frontier = PriorityQueue()
-frontier.put(start, 0)
-came_from = dict()
-cost_so_far = dict()
-came_from[start] = None
-cost_so_far[start] = 0
-
-while not frontier.empty():
-   current = frontier.get()
-
-   if current == goal:
-      break
-   
-   for next in graph.neighbors(current):
-      new_cost = cost_so_far[current] + graph.cost(current, next)
-      if next not in cost_so_far or new_cost < cost_so_far[next]:
-         cost_so_far[next] = new_cost
-         priority = new_cost
-         frontier.put(next, priority)
-         came_from[next] = current
-	*/
-	const queue = [[startNode, 0]]; // Needs to be PriorityQueue
-	// add start with a value of 0
+	/**@type {PriorityQueue<string>} */
+	const queue = new PriorityQueue(); // Needs to be PriorityQueue
+	/** @type {Map<string, string} */
 	const came_from = new Map();
+	/** @type {Map<string, number} */
 	const cost_so_far = new Map();
 
+	queue.put(startNode, 0);
 	came_from.set(startNode, null);
 	cost_so_far.set(startNode, 0);
 
-	console.log(queue);
-	/**/
-	while (queue.length > 0) {
-		const currentNode = queue.shift(); //Depend son PQ
+	while (queue.size > 0) {
+		const {node: currentNode} = queue.get();
 		if (currentNode == endNode) break;
 
 		// Search side paths
@@ -121,14 +100,20 @@ while not frontier.empty():
 			const new_cost = cost_so_far.get(currentNode) + cost; // How to handle the cost bit?
 			if (!cost_so_far.has(node) || new_cost < cost_so_far.get(node)) {
 				cost_so_far.set(node, new_cost);
-				queue.push([node, new_cost]);
-				queue.sort((a, b) => b[1] - a[1]);
+				queue.put(node, new_cost);
 				came_from.set(node, currentNode);
 			}
 		});
 	}
-	/*
-	*/
+
+	let currentNode = endNode;
+	const path = [];
+	while (currentNode != startNode) {
+		path.push(currentNode);
+		currentNode = came_from.get(currentNode);
+		if (!currentNode) return false;
+	}
+	return path;
 }
 
 /**
