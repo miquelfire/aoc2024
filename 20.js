@@ -1,3 +1,5 @@
+import { type } from "os";
+
 /**
  * @param {string} d 
  */
@@ -117,7 +119,99 @@ export const part1 = async d => {
  * @param {string} d 
  */
 export const part2 = async d => {
-	const data = d.split('\n');
-	data.splice(0, data.length);
-	return data;
+	const map = d.split('\n').map(e => e.split(''));
+	const path = new Set('0x0'); // To be filled in when scanning the map
+	path.clear();
+	const start = [0, 0];
+	const end = [0, 0];
+
+	for (let y = 1; y < map.length; y++) {
+		for (let x = 1; x < map[y].length - 1; x++) {
+			const tile = map[y][x];
+			if (tile == '#') {
+				continue;
+			}
+
+			if (tile == 'S') {
+				start[0] = x;
+				start[1] = y;
+			}
+			if (tile == 'E') {
+				end[0] = x;
+				end[1] = y;
+			}
+			path.add([x, y].join('x'));
+		}
+	}
+
+	const visited = new Map([[start.join('x'), 0]]);
+	visited.clear();
+
+	let count = 0;
+	// queue should alway be a length of 1 until the end. Just easier to deal with an const array then let variable pointing the to next bit
+	const queue = [start];
+
+	while (queue.length) {
+		const pos = queue.pop();
+		const posStr = pos.join('x');
+
+		const north = [pos[0], pos[1] - 1];
+		const northStr = north.join('x');
+		const south = [pos[0], pos[1] + 1];
+		const southStr = south.join('x');
+		const east = [pos[0] + 1, pos[1]];
+		const eastStr = east.join('x');
+		const west = [pos[0] - 1, pos[1]];
+		const westStr = west.join('x');
+
+		// Find the next tile to go to and add it to the queue
+		if (path.has(northStr) && !visited.has(northStr)) {
+			// We haven't been north yet
+			queue.push(north);
+		}
+		if (path.has(southStr) && !visited.has(southStr)) {
+			// We haven't been north yet
+			queue.push(south);
+		}
+		if (path.has(eastStr) && !visited.has(eastStr)) {
+			// We haven't been north yet
+			queue.push(east);
+		}
+		if (path.has(westStr) && !visited.has(westStr)) {
+			// We haven't been north yet
+			queue.push(west);
+		}
+		visited.set(posStr, count++);
+	}
+
+	let shortcuts = 0;
+
+	/** 
+	 * @type {[[number, number], number]}
+	 */
+	const queue2 = [...visited.entries()].map(e => [e[0].split('x').map(e => +e), e[1]]);
+
+	while (queue2.length) {
+		/** 
+		 * @type {[[number, number], number]}
+		 */
+		const [dst, dstDis] = queue2.pop();
+
+
+		let /** @type {[number, number]} */ src, /** @type {number} */ srcDis;
+		for ([src, srcDis] of queue2) {
+			const mattDis = Math.abs(src[0] - dst[0]) + Math.abs(src[1] - dst[1]);
+			const disDiff = dstDis - srcDis;
+			const saved = disDiff - mattDis;
+			//if (mattDis == 2) console.log(mattDis, disDiff, saved);
+			if (saved > 99 && mattDis < 21) {
+				shortcuts++;
+			}
+		}
+	}
+
+	//43698329 Too high
+	//1017615
+	//893328 Too Low
+	return shortcuts;
 };
