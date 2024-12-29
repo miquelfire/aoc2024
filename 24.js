@@ -3,45 +3,45 @@
  */
 export const part1 = async d => {
 	const [inputsRaw, gatesRaw] = d.split('\n\n').map(e => e.split('\n'));
-	const inputs = new Map(inputsRaw.map(e => e.split(': ')));
-	const gates = new Map(gatesRaw.map(e => {
+
+	/**@type {Map<string, string>} */
+	const known = new Map(inputsRaw.map(e => e.split(': ')));
+
+	/**@type{Map<string, [string, number, number]} */
+	const formulas = new Map(gatesRaw.map(e => {
 		const regEx = /([a-z\d]+) (AND|OR|XOR) ([a-z\d]+) -> ([a-z\d]+)/;
 		const matches = regEx.exec(e);
 		return [matches[4], [matches[2], matches[1], matches[3]]];
 	}));
 
-	const queue = [...gates.keys()];
+	/**@type {Map<string, (x:number, y:number) => number>} */
+	const operators = new Map([
+		['OR', (x, y) => x | y],
+		['AND', (x, y) => x & y],
+		['XOR', (x, y) => x ^ y],
+	]);
 
-	while (queue.length) {
-		const currGateId = queue.shift();
-		const currGate = gates.get(currGateId);
-		const op = currGate[0];
-		const input1 = inputs.get(currGate[1]);
-		const input2 = inputs.get(currGate[2]);
-		if (!input1 || !input2) {
-			// Inputs not ready
-			queue.push(currGateId);
-			continue;
+	function calculate(wire) {
+		if (known.has(wire)) {
+			return known.get(wire);
 		}
-		switch (op) {
-			case 'AND': {
-				inputs.set(currGateId, (Number(input1) && Number(input2)) ? '1' : '0');
-				break;
-			}
-			case 'OR': {
-				inputs.set(currGateId, (Number(input1) || Number(input2)) ? '1' : '0');
-				break;
-			}
-			case 'XOR': {
-				inputs.set(currGateId, (Number(input1) ^ Number(input2)) ? '1' : '0');
-				break;
-			}
-		}
+		/**@type {[string, number, number]} */
+		const [op, x, y] = formulas.get(wire);
+		known.set(wire, operators.get(op)(calculate(x), calculate(y)));
+		return known.get(wire);
 	}
 
-	const zwires = [...inputs.entries()].filter((e => e[0][0] == 'z')).reduce((p, v) => p |= BigInt(v[1]) << BigInt(v[0].slice(1)), 0n);
-
-	return zwires.toString();
+	const zwires = [];
+	let i = 0;
+	while (true) {
+		const key = 'z' + ('' + i).padStart(2, '0');
+		if (!formulas.has(key)) {
+			break;
+		}
+		zwires.push(calculate(key) + '');
+		i++;
+	}
+	return BigInt('0b' + zwires.reverse().join(''), 2).toString();
 };
 
 /**
@@ -49,7 +49,45 @@ export const part1 = async d => {
  */
 export const part2 = async d => {
 	const [inputsRaw, gatesRaw] = d.split('\n\n').map(e => e.split('\n'));
-	gatesRaw.splice(0, gatesRaw.length);
-	inputsRaw.splice(0, inputsRaw.length);
-	return gatesRaw;
+
+	/**@type {Map<string, string>} */
+	const known = new Map(inputsRaw.map(e => e.split(': ')));
+
+	/**@type{Map<string, [string, number, number]} */
+	const formulas = new Map(gatesRaw.map(e => {
+		const regEx = /([a-z\d]+) (AND|OR|XOR) ([a-z\d]+) -> ([a-z\d]+)/;
+		const matches = regEx.exec(e);
+		return [matches[4], [matches[2], matches[1], matches[3]]];
+	}));
+
+	/**@type {Map<string, (x:number, y:number) => number>} */
+	const operators = new Map([
+		['OR', (x, y) => x | y],
+		['AND', (x, y) => x & y],
+		['XOR', (x, y) => x ^ y],
+	]);
+
+	function calculate(wire) {
+		if (known.has(wire)) {
+			return known.get(wire);
+		}
+		/**@type {[string, number, number]} */
+		const [op, x, y] = formulas.get(wire);
+		known.set(wire, operators.get(op)(calculate(x), calculate(y)));
+		return known.get(wire);
+	}
+
+	const zwires = [];
+	let i = 0;
+	while (true) {
+		const key = 'z' + ('' + i).padStart(2, '0');
+		if (!formulas.has(key)) {
+			break;
+		}
+		zwires.push(calculate(key) + '');
+		i++;
+	}
+	console.log(parseInt(zwires.reverse().join(''), 2));
+
+	return NaN;
 };
